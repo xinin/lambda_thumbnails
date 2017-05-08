@@ -12,19 +12,15 @@ var MAX_HEIGHT = 100;
 var s3 = new AWS.S3();
  
 exports.handler = function(event, context) {
+
 	// Read options from the event.
 	console.log("Reading options from event:\n", util.inspect(event, {depth: 5}));
 	var srcBucket = event.Records[0].s3.bucket.name;
 	// Object key may have spaces or unicode non-ASCII characters.
-    var srcKey    = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));  
-	var dstBucket = srcBucket + "resized";
-	var dstKey    = "media/" + srcKey;
+    var srcKey    = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
+	var dstBucket = srcBucket; //If you want to upload the thumbs in other bucket
+	var dstKey    = "thumb/" + srcKey;
 
-	// Sanity check: validate that source and destination are different buckets.
-	if (srcBucket == dstBucket) {
-		console.error("Destination bucket must not match source bucket.");
-		return;
-	}
 
 	// Infer the image type.
 	var typeMatch = srcKey.match(/\.([^.]*)$/);
@@ -85,7 +81,7 @@ exports.handler = function(event, context) {
 					' and upload to ' + dstBucket + '/' + dstKey +
 					' due to an error: ' + err;
 			} else {
-				msg = 'Successfully resized ' + srcBucket + '/' + srcKey + 
+				msg = 'Successfully resized ' + srcBucket + '/' + srcKey +
 				' and uploaded to ' + dstBucket + '/' + dstKey;
 			}
 
